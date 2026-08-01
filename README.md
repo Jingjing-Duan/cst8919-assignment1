@@ -1,4 +1,5 @@
-# CST8919 Lab 1 - Flask Auth0 Login
+# cst8919-assignment1 - # Securing and Monitoring anAuthenticated Flask App
+
 
 ## Objective
 
@@ -89,3 +90,4 @@ If the user is not logged in, they are redirected to the Auth0 login page.
 
 ## What I Learned
 I learned how to integrate Auth0 with a Flask web application. Auth0 acts as the Identity Provider (IdP), while my Flask application acts as the Service Provider (SP). I learned how authentication works using OpenID Connect and how to manage user sessions in Flask. I also implemented a protected route that redirects unauthenticated users to the login page.
+=======
