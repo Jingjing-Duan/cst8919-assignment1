@@ -1,93 +1,214 @@
-# cst8919-assignment1 - # Securing and Monitoring anAuthenticated Flask App
+# CST8919 Assignment 1 – Securing and Monitoring an Authenticated Flask App
+
+## Student Information
+
+**Name:** Jingjing Duan
+
+**Course:** CST8919 – DevOps - Security and Compliance
+
+---
+
+# Project Overview
+
+This assignment extends the Flask application developed in Lab 1 by integrating authentication, monitoring, and security logging in Microsoft Azure.
+
+The application uses Auth0 for user authentication and is deployed to Azure App Service. User activities are logged and collected by Azure Monitor. Log Analytics and Kusto Query Language (KQL) are used to detect suspicious behavior, and Azure Alert Rules are configured to notify administrators when abnormal activities are detected.
+
+---
+
+# YouTube Demo Link
 
 
-## Objective
+---
 
-This project demonstrates how to integrate Auth0 authentication into a Flask web application. Users can log in and log out using Auth0, and authenticated users can access a protected page.
+# Technologies Used
 
-The app supports:
-
-- Login with Auth0
-- Logout
-- A protected page that only authenticated users can access
-  
-## Demo Video
-
-YouTube demo link:
-https://youtu.be/atKJ5kunEu8
-
-
-## Technologies Used
-
-- Python
+- Python 3.11
 - Flask
 - Auth0
-- Authlib
-- OpenID Connect (OIDC)
-- python-dotenv
-- HTML
+- Azure App Service
+- Azure Monitor
+- Log Analytics Workspace
+- Kusto Query Language (KQL)
+- GitHub Actions
 
-## Auth0 Configuration
+---
 
-In Auth0, create a Regular Web Application and configure:
+# Application Features
 
-Allowed Callback URLs:
+## Authentication
 
-```text
-http://localhost:3000/callback
+The application uses Auth0 to authenticate users.
+
+Authenticated users can:
+
+- Log in securely
+- Access the protected page
+- Log out
+
+Unauthenticated users attempting to access the protected route are redirected to the login page.
+
+---
+
+## Security Logging
+
+The application records the following security events:
+
+### Login Success
+
+When a user successfully logs in, the application logs:
+
+- User ID
+- Email address
+- Timestamp
+
+Example:
+
+```json
+{
+  "event":"LOGIN_SUCCESS",
+  "user_id":"auth0|xxxx",
+  "email":"user@example.com"
+}
 ```
 
-Allowed Logout URLs:
+---
 
-```text
-http://localhost:3000
+### Protected Route Access
+
+Whenever an authenticated user accesses `/protected`, the application records:
+
+- User ID
+- Email
+- Route
+
+Example:
+
+```json
+{
+  "event":"PROTECTED_ACCESS",
+  "user_id":"auth0|xxxx",
+  "email":"user@example.com",
+  "path":"/protected"
+}
 ```
 
-Allowed Web Origins:
-```text
-http://localhost:3000
+---
+
+### Unauthorized Access
+
+If an unauthenticated user attempts to access `/protected`, the application records:
+
+- Event type
+- Client IP address
+- Requested path
+
+Example:
+
+```json
+{
+  "event":"UNAUTHORIZED_ACCESS",
+  "path":"/protected",
+  "ip_address":"127.0.0.1"
+}
 ```
 
-## Environment Variables
-Create a .env file in the project root:
-```env
-AUTH0_CLIENT_ID=your_client_id
-AUTH0_CLIENT_SECRET=your_client_secret
-AUTH0_DOMAIN=your_auth0_domain
-APP_SECRET_KEY=your_app_secret_key
+---
+
+# Azure Deployment
+
+The application is deployed to Azure App Service using GitHub Actions.
+
+Deployment includes:
+
+- Automatic build
+- Automatic deployment
+- Environment variables stored in Azure App Service
+- Auth0 configuration
+
+---
+
+# Monitoring
+
+Azure Monitor is configured to collect application logs.
+
+Diagnostic Settings send the following logs to Log Analytics Workspace:
+
+- App Service Console Logs
+- App Service Application Logs
+- HTTP Logs
+- Platform Logs
+
+---
+
+# KQL Query
+
+The following KQL query detects users who access the protected route excessively within a five-minute period.
+
+```kusto
+AppServiceConsoleLogs
+| where ResultDescription contains "PROTECTED_ACCESS"
+| extend UserId = extract('"user_id": "([^"]+)"', 1, ResultDescription)
+| summarize AccessCount = count() by UserId, bin(TimeGenerated, 5m)
+| where AccessCount >= 5
 ```
 
-## Setup
+---
 
-Clone the repository:
+# Alert Rule
 
-```bash
-git clone <repository-url>
-cd Auth0-Python-Web-App-Integration
-```
+An Azure Alert Rule is configured using the KQL query above.
 
-## Install Dependencies
-```bash
-python -m pip install -r requirements.txt
-```
+Alert configuration:
 
-## Run the App
-```bash
-python server.py
-```
+- Evaluation Frequency: 5 minutes
+- Time Window: 5 minutes
+- Threshold: Greater than 0 results
 
-Then open:
-```text
-http://localhost:3000
-```
+The alert is triggered when a user accesses the protected route five or more times within five minutes.
+
+---
+
+# Screenshots
+
+## Azure App Service
+
+![alt text](screenshots/image0.png)
+
+---
+
+## Successful Authentication
+
+![alt text](screenshots/image.png)
+
+---
 
 ## Protected Route
-The app includes a custom route:
-```text
-http://localhost:3000/protected
-```
-If the user is not logged in, they are redirected to the Auth0 login page.
 
-## What I Learned
-I learned how to integrate Auth0 with a Flask web application. Auth0 acts as the Identity Provider (IdP), while my Flask application acts as the Service Provider (SP). I learned how authentication works using OpenID Connect and how to manage user sessions in Flask. I also implemented a protected route that redirects unauthenticated users to the login page.
-=======
+![alt text](screenshots/image2.png)
+
+---
+
+## Diagnostic Settings
+
+![alt text](screenshots/image3.png)
+
+---
+
+## Log Analytics Query
+
+![alt text](screenshots/image4.png)
+
+---
+
+## Alert Rule
+
+![alt text](screenshots/image5.png)
+
+---
+
+# Conclusion
+
+This assignment demonstrates how authentication, application logging, Azure monitoring, and alerting can be integrated to improve the security and observability of a cloud-hosted Flask application.
+
+The solution provides centralized monitoring of user activities and enables administrators to detect suspicious behavior using Azure Monitor and Kusto Query Language.
