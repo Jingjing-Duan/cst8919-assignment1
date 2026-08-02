@@ -5,6 +5,7 @@ import logging
 from authlib.integrations.flask_client import OAuth
 from dotenv import find_dotenv, load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 ENV_FILE = find_dotenv()
 if ENV_FILE:
@@ -12,6 +13,14 @@ if ENV_FILE:
 
 app = Flask(__name__)
 app.secret_key = env.get("APP_SECRET_KEY")
+
+app.wsgi_app = ProxyFix(
+    app.wsgi_app,
+    x_for=1,
+    x_proto=1,
+    x_host=1,
+)
+
 app.logger.setLevel(logging.INFO)
 
 oauth = OAuth(app)
