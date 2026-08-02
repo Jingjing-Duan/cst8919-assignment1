@@ -167,6 +167,8 @@ Alert configuration:
 
 The alert is triggered when a user accesses the protected route five or more times within five minutes.
 
+An Azure Action Group is configured to send email notifications when the KQL query detects suspicious activity. During testing, the alert was successfully triggered and an email notification was received.
+
 ---
 
 # Screenshots
@@ -206,6 +208,10 @@ The alert is triggered when a user accesses the protected route five or more tim
 ![alt text](screenshots/image5.png)
 
 ---
+
+## Alert Email Notification
+
+![alt text](screenshots/image6.png)
 
 # Conclusion
 
