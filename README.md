@@ -17,6 +17,7 @@ The application uses Auth0 for user authentication and is deployed to Azure App 
 ---
 
 # YouTube Demo Link
+https://youtu.be/3EGs9jwmFSA
 
 
 ---
@@ -31,6 +32,42 @@ The application uses Auth0 for user authentication and is deployed to Azure App 
 - Log Analytics Workspace
 - Kusto Query Language (KQL)
 - GitHub Actions
+
+---
+
+# Setup Steps
+
+## Auth0 Configuration
+
+1. Create an Auth0 Regular Web Application.
+2. Configure the callback URLs:
+   - `http://localhost:3000/callback`
+   - `https://<app-name>.azurewebsites.net/callback`
+3. Configure the logout URLs:
+   - `http://localhost:3000`
+   - `https://<app-name>.azurewebsites.net`
+4. Obtain the Auth0 credentials:
+   - AUTH0_DOMAIN
+   - AUTH0_CLIENT_ID
+   - AUTH0_CLIENT_SECRET
+
+## Azure Deployment
+
+1. Create an Azure App Service.
+2. Deploy the Flask application using GitHub Actions.
+3. Configure the required application settings in Azure App Service.
+4. Enable Diagnostic Settings and send logs to a Log Analytics Workspace.
+
+## .env Configuration
+
+For local development, the following environment variables are stored in a `.env` file. In Azure App Service, the same values are configured as Environment Variables.
+
+```text
+APP_SECRET_KEY
+AUTH0_DOMAIN
+AUTH0_CLIENT_ID
+AUTH0_CLIENT_SECRET
+```
 
 ---
 
@@ -50,7 +87,9 @@ Unauthenticated users attempting to access the protected route are redirected to
 
 ---
 
-## Security Logging
+## Logging and Detection Logic
+
+All application logs are written using the Flask logger (`app.logger`). Azure Monitor collects these logs through App Service Diagnostic Settings and stores them in the Log Analytics Workspace for querying and alerting.
 
 The application records the following security events:
 
@@ -115,19 +154,6 @@ Example:
 
 ---
 
-# Azure Deployment
-
-The application is deployed to Azure App Service using GitHub Actions.
-
-Deployment includes:
-
-- Automatic build
-- Automatic deployment
-- Environment variables stored in Azure App Service
-- Auth0 configuration
-
----
-
 # Monitoring
 
 Azure Monitor is configured to collect application logs.
@@ -141,9 +167,10 @@ Diagnostic Settings send the following logs to Log Analytics Workspace:
 
 ---
 
-# KQL Query
+# KQL Query and Alert Logic
 
-The following KQL query detects users who access the protected route excessively within a five-minute period.
+The following KQL query detects users who access the protected route five or more times within a five-minute period. Azure Monitor evaluates the query every five minutes. When the query returns one or more results, the alert rule is triggered and an email notification is sent through the configured Azure Action Group.
+
 
 ```kusto
 AppServiceConsoleLogs
@@ -167,7 +194,7 @@ Alert configuration:
 
 The alert is triggered when a user accesses the protected route five or more times within five minutes.
 
-An Azure Action Group is configured to send email notifications when the KQL query detects suspicious activity. During testing, the alert was successfully triggered and an email notification was received.
+An Azure Action Group is configured to send email notifications when the KQL query detects suspicious activity. During testing, repeated access to the protected route triggered the alert successfully, and an email notification was received through the configured Azure Action Group.
 
 ---
 
@@ -215,6 +242,6 @@ An Azure Action Group is configured to send email notifications when the KQL que
 
 # Conclusion
 
-This assignment demonstrates how authentication, application logging, Azure monitoring, and alerting can be integrated to improve the security and observability of a cloud-hosted Flask application.
+This assignment demonstrates how authentication, centralized logging, monitoring, and alerting can be integrated into a cloud-hosted Flask application. 
 
-The solution provides centralized monitoring of user activities and enables administrators to detect suspicious behavior using Azure Monitor and Kusto Query Language.
+By combining Auth0, Azure App Service, Azure Monitor, Log Analytics, KQL, and Azure Alert Rules, the application is able to record user activities, detect suspicious access patterns, and notify administrators automatically. This solution improves both the security and observability of the application.

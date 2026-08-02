@@ -1,0 +1,60 @@
+########################################################
+# Valid Access
+########################################################
+
+### Home
+GET http://localhost:3000/
+
+###
+
+### Login
+GET http://localhost:3000/login
+
+# Complete authentication in the browser.
+
+###
+
+### Access Protected Route (Authenticated)
+GET http://localhost:3000/protected
+
+###
+
+### Logout
+GET http://localhost:3000/logout
+
+########################################################
+# Invalid Access
+########################################################
+
+### Access Protected Route Without Authentication
+GET http://localhost:3000/protected
+
+# Expected Result:
+# Redirect to /login
+# Log event: UNAUTHORIZED_ACCESS
+
+########################################################
+# Azure App Service
+########################################################
+
+### Home
+GET https://duan0029-cst8919-a1-gbhfdscugyarhdg6.canadacentral-01.azurewebsites.net/
+
+###
+
+### Login
+GET https://duan0029-cst8919-a1-gbhfdscugyarhdg6.canadacentral-01.azurewebsites.net/login
+
+###
+
+### Protected Route (Unauthenticated)
+GET https://duan0029-cst8919-a1-gbhfdscugyarhdg6.canadacentral-01.azurewebsites.net/protected
+
+# Expected:
+# HTTP 302 Redirect to /login
+# Application logs an UNAUTHORIZED_ACCESS event.
+
+###
+
+### Logout
+GET https://duan0029-cst8919-a1-gbhfdscugyarhdg6.canadacentral-01.azurewebsites.net/logout
